@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人類の素材図鑑 — Materials of Civilization</title>
+<meta property="og:title" content="人類の素材図鑑 — Materials of Civilization">
+<meta property="og:description" content="砂500億トンから白金族5トンまで。素材・元素・地理・加工・時代・リサイクル・未来を15のチャートで一望する総合ダッシュボード。">
+<meta property="og:url" content="https://osakenpiro.github.io/materials-of-civilization/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="人類の素材図鑑 — Materials of Civilization">
+<meta name="twitter:description" content="砂500億トンから白金族5トンまで。15のインタラクティブチャートで文明の素材を一望。">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg: #faf9f6; --bg2: #f2f0eb; --bg3: #e8e6e0;
+  --tx: #2c2c2a; --tx2: #5f5e5a; --tx3: #888780;
+  --border: rgba(0,0,0,0.08);
+  --purple: #534AB7; --teal: #1D9E75; --coral: #D85A30;
+  --blue: #3266ad; --pink: #D4537E; --gray: #888780;
+  --amber: #BA7517; --red: #E24B4A; --green: #639922;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1a18; --bg2: #242422; --bg3: #2e2e2c;
+    --tx: #e8e6e0; --tx2: #b4b2a9; --tx3: #888780;
+    --border: rgba(255,255,255,0.08);
+  }
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Noto Sans JP', 'DM Sans', sans-serif;
+  background: var(--bg); color: var(--tx);
+  line-height: 1.7; -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+header h1 { font-size: 1.6rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 0.3rem; }
+header p { font-size: 0.85rem; color: var(--tx2); }
+.section { margin-bottom: 3rem; }
+.section-title {
+  font-size: 1.05rem; font-weight: 500; margin-bottom: 0.3rem;
+}
+.section-sub { font-size: 0.8rem; color: var(--tx2); margin-bottom: 1rem; }
+.legend {
+  display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 10px;
+  font-size: 0.75rem; color: var(--tx2);
+}
+.legend span { display: flex; align-items: center; gap: 5px; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; flex-shrink: 0; }
+.chart-wrap { position: relative; width: 100%; }
+.metric-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px; margin-bottom: 1.5rem;
+}
+.metric {
+  background: var(--bg2); border-radius: 10px; padding: 0.8rem 1rem;
+}
+.metric .label { font-size: 0.7rem; color: var(--tx3); margin-bottom: 2px; }
+.metric .value { font-size: 1.2rem; font-weight: 500; }
+.card-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+}
+.card {
+  background: var(--bg2); border-radius: 12px; padding: 1rem 1.1rem;
+  border: 0.5px solid var(--border);
+}
+.card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.card-head .name { font-size: 0.9rem; font-weight: 500; }
+.card-head .prod { font-size: 0.7rem; color: var(--tx3); background: var(--bg3); padding: 2px 8px; border-radius: 6px; }
+.tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.tag {
+  display: inline-block; padding: 2px 9px; font-size: 0.68rem;
+  border-radius: 6px; font-weight: 500;
+}
+.card .note { font-size: 0.73rem; color: var(--tx2); line-height: 1.6; }
+.info-box {
+  padding: 12px 16px; border-radius: 10px; margin-top: 1rem;
+}
+.divider { border-top: 1px solid var(--border); margin: 2.5rem 0; }
+.badge {
+  display: inline-block; padding: 2px 8px; font-size: 0.68rem;
+  font-weight: 500; border-radius: 6px;
+}
+.geo-cards {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px; margin-bottom: 2rem;
+}
+.geo-card {
+  background: var(--bg2); border-radius: 12px; padding: 1rem 1.1rem;
+  border: 0.5px solid var(--border);
+}
+.geo-card .gc-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.geo-card .gc-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.geo-card .gc-title { font-size: 0.9rem; font-weight: 500; }
+.geo-card .gc-desc { font-size: 0.75rem; color: var(--tx2); line-height: 1.5; margin-bottom: 8px; }
+.geo-card .gc-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+.geo-card .gc-region { font-size: 0.68rem; color: var(--tx3); }
+nav {
+  position: sticky; top: 0; z-index: 10; background: var(--bg);
+  border-bottom: 1px solid var(--border); padding: 0.6rem 0;
+  margin-bottom: 2rem; overflow-x: auto; white-space: nowrap;
+}
+nav a {
+  display: inline-block; font-size: 0.75rem; color: var(--tx2);
+  text-decoration: none; padding: 4px 12px; border-radius: 6px;
+  transition: all 0.15s;
+}
+nav a:hover { background: var(--bg2); color: var(--tx); }
+.warn-badge {
+  display: inline-block; padding: 2px 8px; font-size: 0.65rem;
+  font-weight: 500; border-radius: 6px;
+  background: rgba(186,117,23,0.12); color: var(--amber);
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>人類の素材図鑑</h1>
+  <p>Materials of Civilization — 素材・元素・地理・加工・時代の総合ダッシュボード</p>
+</header>
+
+<nav id="toc">
+  <a href="#sec-overview">概要</a>
+  <a href="#sec-usage">用途別</a>
+  <a href="#sec-era">時代別</a>
+  <a href="#sec-elements">元素比較</a>
+  <a href="#sec-difficulty">加工難易度</a>
+  <a href="#sec-regular">レギュラー</a>
+  <a href="#sec-guest">ゲスト</a>
+  <a href="#sec-scale">生産量比較</a>
+  <a href="#sec-ree">レアアース</a>
+  <a href="#sec-geo">地理・プレート</a>
+  <a href="#sec-geopolitics">地政学集中度</a>
+  <a href="#sec-recycle">リサイクル率</a>
+  <a href="#sec-japan">日本の資源</a>
+  <a href="#sec-lifespan">寿命・分解</a>
+  <a href="#sec-future">未来の素材</a>
+</nav>
+
+<!-- ========== 1. OVERVIEW ========== -->
+<div class="section" id="sec-overview">
+  <div class="section-title">全球資源採掘の概要</div>
+  <div class="section-sub">年間約1,000億トン — 水を除く最大の物質消費</div>
+  <div class="metric-grid">
+    <div class="metric"><div class="label">年間総採掘量</div><div class="value">~1,000億t</div></div>
+    <div class="metric"><div class="label">最大カテゴリ</div><div class="value">非金属鉱物</div></div>
+    <div class="metric"><div class="label">1人あたり/年</div><div class="value">~12.5t</div></div>
+    <div class="metric"><div class="label">20世紀の増加</div><div class="value">~14倍</div></div>
+  </div>
+  <div class="legend">
+    <span><i style="background:#534AB7"></i>非金属鉱物 48%</span>
+    <span><i style="background:#1D9E75"></i>バイオマス 24%</span>
+    <span><i style="background:#D85A30"></i>化石燃料 15%</span>
+    <span><i style="background:#3266ad"></i>金属鉱石 10%</span>
+    <span><i style="background:#888780"></i>その他 3%</span>
+  </div>
+  <div class="chart-wrap" style="height:280px"><canvas id="c-donut"></canvas></div>
+
+  <div style="margin-top:1.5rem">
+    <div class="section-sub">個別素材の年間生産量（億トン）</div>
+    <div class="legend">
+      <span><i style="background:#534AB7"></i>非金属鉱物</span>
+      <span><i style="background:#1D9E75"></i>バイオマス</span>
+      <span><i style="background:#D85A30"></i>化石燃料</span>
+      <span><i style="background:#3266ad"></i>金属</span>
+      <span><i style="background:#D4537E"></i>化学素材</span>
+    </div>
+    <div class="chart-wrap" style="height:400px"><canvas id="c-prodbar"></canvas></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ========== 2. USAGE ========== -->
+<div class="section" id="sec-usage">
+  <div class="section-title">用途別の内訳</div>
+  <div class="section-sub">建築・インフラが半分を食う — 人間は箱を作って住む生き物</div>
+  <div class="legend">
+    <span><i style="background:#534AB7"></i>建築 51%</span>
+    <span><i style="background:#D85A30"></i>エネルギー 20%</span>
+    <span><i style="background:#1D9E75"></i>農業 14%</span>
+    <span><i style="background:#3266ad"></i>製造 9%</span>
+    <span><i style="background:#D4537E"></i>消費財 4%</span>
+    <span><i style="background:#888780"></i>他 2%</span>
+  </div>
+  <div class="chart-wrap" style="height:260px"><canvas id="c-usage"></canvas></div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ========== 3. ERA ========== -->
+<div class="section" id="sec-era">
+  <div class="section-title">時代別の素材構成シフト</div>
+  <div class="section-sub">加工難易度が低い順に使い始め、産業革命で化石燃料が爆発 <span class="warn-badge">古代は推定値</span></div>
+  <div class="legend">
+    <span><i style="background:#534AB7"></i>石・砂・鉱物</span>
+    <span><i style="background:#1D9E75"></i>木・バイオマス</span>
+    <span><i style="background:#3266ad"></i>金属</span>
+    <span><i style="background:#D85A30"></i>化石燃料</span>
+    <span><i style="background:#D4537E"></i>化学素材</span>
+  </div>
+  <div class="chart-wrap" style="height:340px"><canvas id="c-era"></canvas></div>
+  <div class="metric-grid" style="margin-top:1rem">
+    <div class="metric"><div class="label" style="color:var(--amber)">石器時代</div><div class="value">~0.001億t/年</div></div>
+    <div class="metric"><div class="label" style="color:var(--amber)">青銅器</div><div class="value">~0.01億t/年</div></div>
+    <div class="metric"><div class="label" style="color:var(--amber)">鉄器</div><div class="value">~0.1億t/年</div></div>
+    <div class="metric"><div class="label" style="color:var(--amber)">中世</div><div class="value">~1億t/年</div></div>
+    <div class="metric"><div class="label">産業革命</div><div class="value">~15億t/年</div></div>
+    <div class="metric"><div class="label">電気・化学</div><div class="value">~50億t/年</div></div>
+    <div class="metric"><div class="label">現代</div><div class="value">~1,000億t/年</div></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ========== 4. ELEMENTS ========== -->
+<div class="section" id="sec-elements">
+  <div class="section-title">元素構成の比較：地殻 vs 人類の採掘</div>
+  <div class="section-sub">炭素(C)の濃縮倍率 約750倍 — 気候変動の元素レベルの正体</div>
+  <div class="legend">
+    <span><i style="background:#888780"></i>地殻の構成</span>
+    <span><i style="background:#534AB7"></i>人類の採掘</span>
+  </div>
+  <div class="chart-wrap" style="height:360px"><canvas id="c-elem"></canvas></div>
+  <div class="info-box" style="background:rgba(50,102,173,0.08)">
+    <div style="font-size:0.8rem;font-weight:500;color:var(--blue)">炭素(C)の濃縮倍率：約750倍</div>
+    <div style="font-size:0.75rem;color:var(--blue);margin-top:3px">地殻中わずか0.02%のCが、採掘物の約15%を占める。化石燃料・バイオマスへの偏重が元素レベルで見える。</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ========== 5. DIFFICULTY ========== -->
+<div class="section" id="sec-difficulty">
+  <div class="section-title">加工難易度スケール</div>
+  <div class="section-sub">エネルギー投入量(MJ/kg) — ホバーで温度・工程数を表示。砂→半導体Siで25,000倍</div>
+  <div class="chart-wrap" style="height:380px"><canvas id="c-diff"></canvas></div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ========== 6. REGULAR MEMBERS ========== -->
+<div class="section" id="sec-regular">
+  <div class="section-title">レギュラーメンバー：量で勝負する主要素材</div>
+  <div class="section-sub">人類文明のインフラを構成する素材たち</div>
+  <div class="card-grid" id="regular-cards"></div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ========== 7. GUEST MEMBERS ========== -->
+<div class="section" id="sec-guest">
+  <div class="section-title">ゲストメンバー：特性で勝負する希少素材</div>
+  <div class="section-sub">量はレギュラーの1/100〜1/100万だが、代替が効かない</div>
+  <div class="card-grid" id="guest-cards"></div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ========== 8. SCALE COMPARISON ========== -->
+<div class="section" id="sec-scale">
+  <div class="section-title">レギュラー vs ゲスト：生産量の全体比較</div>
+  <div class="section-sub">対数スケールで並べると桁の差が一目でわかる</div>
+  <div class="legend">
+    <span><i style="background:#534AB7"></i>レギュラー</span>
+    <span><i style="background:#BA7517"></i>ゲスト</span>
+  </div>
+  <div class="chart-wrap" style="height:580px"><canvas id="c-scale"></canvas></div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ========== 9. RARE EARTH ========== -->
+<div class="section" id="sec-ree">
+  <div class="section-title">レアアース17元素の内訳</div>
+  <div class="section-sub">Ce(セリウム)だけで38%。ホバーで各元素の用途を表示</div>
+  <div class="legend">
+    <span><i style="background:#534AB7"></i>軽希土類(LREE) 90%</span>
+    <span><i style="background:#D4537E"></i>重希土類(HREE) 10%</span>
+  </div>
+  <div class="chart-wrap" style="height:440px"><canvas id="c-ree"></canvas></div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ========== 10. GEO / PLATE ========== -->
+<div class="section" id="sec-geo">
+  <div class="section-title">地質構造と産出資源の関係</div>
+  <div class="section-sub">プレートの配置が「ガチャの確率表」を決めている</div>
+  <div class="geo-cards" id="geo-cards"></div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ========== 11. GEOPOLITICS ========== -->
+<div class="section" id="sec-geopolitics">
+  <div class="section-title">地政学的集中度：上位国のシェア</div>
+  <div class="section-sub">赤=60%超の1国独占、黄=40-60%、緑=分散</div>
+  <div class="chart-wrap" style="height:320px"><canvas id="c-geopol"></canvas></div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ========== 12. RECYCLE ========== -->
+<div class="section" id="sec-recycle">
+  <div class="section-title">素材別リサイクル率</div>
+  <div class="section-sub">金属は優等生、プラスチックは惨憺たる状況。ホバーで理由を表示</div>
+  <div class="legend">
+    <span><i style="background:#1D9E75"></i>70%以上</span>
+    <span><i style="background:#3266ad"></i>30-70%</span>
+    <span><i style="background:#E24B4A"></i>30%未満</span>
+  </div>
+  <div class="chart-wrap" style="height:400px"><canvas id="c-recycle"></canvas></div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ========== 13. JAPAN ========== -->
+<div class="section" id="sec-japan">
+  <div class="section-title">日本の資源事情</div>
+  <div class="section-sub">「掘る国」から「回収する国」へ — 都市鉱山・海底鉱床・輸入依存度</div>
+  <div class="metric-grid">
+    <div class="metric"><div class="label">エネルギー自給率</div><div class="value">~13%</div></div>
+    <div class="metric"><div class="label">鉱物資源自給率</div><div class="value">~0%</div></div>
+    <div class="metric"><div class="label">都市鉱山Au</div><div class="value">世界の16%相当</div></div>
+    <div class="metric"><div class="label">EEZ面積</div><div class="value">世界6位</div></div>
+  </div>
+
+  <div style="margin-bottom:1.5rem">
+    <div class="section-sub" style="margin-top:0.5rem">主要資源の輸入依存度（%）</div>
+    <div class="chart-wrap" style="height:340px"><canvas id="c-japan-import"></canvas></div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-head"><div class="name">都市鉱山</div></div>
+      <div class="tags">
+        <span class="tag" style="background:#BA751715;color:#BA7517">Au 6,800t</span>
+        <span class="tag" style="background:#BA751715;color:#BA7517">Ag 60,000t</span>
+        <span class="tag" style="background:#BA751715;color:#BA7517">In 61%</span>
+        <span class="tag" style="background:#BA751715;color:#BA7517">Sb 19%</span>
+      </div>
+      <div class="note">廃棄電子機器中のAu含有量は世界埋蔵量の約16%相当。「掘る」ではなく「回収する」資源大国の可能性</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="name">海底熱水鉱床</div></div>
+      <div class="tags">
+        <span class="tag" style="background:#3266ad15;color:#3266ad">沖縄トラフ</span>
+        <span class="tag" style="background:#3266ad15;color:#3266ad">伊豆小笠原</span>
+        <span class="tag" style="background:#3266ad15;color:#3266ad">Zn Cu Au REE</span>
+      </div>
+      <div class="note">EEZ内に亜鉛・銅・金・レアアースが眠る。2017年に沖縄で世界初の海底採掘試験に成功。商用化はまだ先</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="name">南鳥島レアアース泥</div></div>
+      <div class="tags">
+        <span class="tag" style="background:#99355615;color:#993556">Y イットリウム</span>
+        <span class="tag" style="background:#99355615;color:#993556">Dy ジスプロシウム</span>
+        <span class="tag" style="background:#99355615;color:#993556">Eu ユーロピウム</span>
+      </div>
+      <div class="note">水深6,000mの海底泥にHREE（重希土類）が高濃度で含まれる。世界需要数百年分とも。引き揚げコストが壁</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ========== 14. LIFESPAN ========== -->
+<div class="section" id="sec-lifespan">
+  <div class="section-title">素材の寿命・分解期間</div>
+  <div class="section-sub">自然環境で分解されるまでの時間。対数スケール — プラ袋とガラスは1000倍違う</div>
+  <div class="legend">
+    <span><i style="background:#1D9E75"></i>生分解性（数年以内）</span>
+    <span><i style="background:#3266ad"></i>中期（数十〜百年）</span>
+    <span><i style="background:#D85A30"></i>長期（百年超）</span>
+    <span><i style="background:#993556"></i>実質永久</span>
+  </div>
+  <div class="chart-wrap" style="height:460px"><canvas id="c-lifespan"></canvas></div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ========== 15. FUTURE ========== -->
+<div class="section" id="sec-future">
+  <div class="section-title">未来の素材</div>
+  <div class="section-sub">実験室から実用へ — 次の「ゲストメンバー」候補たち</div>
+  <div class="card-grid" id="future-cards"></div>
+  <div style="margin-top:1.5rem">
+    <div class="section-sub">実用化タイムライン vs 性能インパクト</div>
+    <div class="chart-wrap" style="height:340px"><canvas id="c-future-bubble"></canvas></div>
+  </div>
+</div>
+
+<div style="margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border);font-size:0.7rem;color:var(--tx3)">
+  <p>データは国連環境計画(UNEP)、USGS、世界資源研究所(WRI)等の公開統計に基づく概算値。2024-2025年時点の推計。</p>
+  <p style="margin-top:4px">Generated with Claude — 2026.03.24 | <a href="https://osakenpiro.github.io/boku-no-wakusei/" style="color:var(--tx3);text-decoration:underline">osakenpiro</a></p>
+</div>
+
+</div>
+
+<script>
+const dk = matchMedia('(prefers-color-scheme:dark)').matches;
+const tc = dk?'#b4b2a9':'#5F5E5A';
+const gc = dk?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.05)';
+const wc = dk?'#EF9F27':'#854F0B';
+const commonOpts = (h) => ({responsive:true,maintainAspectRatio:false});
+
+// 1. Donut
+new Chart(document.getElementById('c-donut'),{type:'doughnut',data:{labels:['非金属鉱物','バイオマス','化石燃料','金属鉱石','その他'],datasets:[{data:[48,24,15,10,3],backgroundColor:['#534AB7','#1D9E75','#D85A30','#3266ad','#888780'],borderWidth:dk?0.5:1,borderColor:dk?'rgba(255,255,255,0.1)':'#fff'}]},options:{...commonOpts(),cutout:'55%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+c.parsed+'%'}}}}});
+
+// 1b. Production bar
+new Chart(document.getElementById('c-prodbar'),{type:'bar',data:{labels:['砂・砕石','コンクリート','木材','石炭','鉄鋼','石油','セメント','天然ガス','プラスチック','ガラス','アルミ','銅'],datasets:[{data:[500,140,35,80,19,45,44,40,4,1.3,0.7,0.2],backgroundColor:['#534AB7','#534AB7','#1D9E75','#D85A30','#3266ad','#D85A30','#534AB7','#D85A30','#D4537E','#534AB7','#3266ad','#3266ad'],borderRadius:4,barPercentage:0.7}]},options:{indexAxis:'y',...commonOpts(),plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.x+'億t/年'}}},scales:{x:{type:'logarithmic',title:{display:true,text:'億トン/年（対数）',color:tc,font:{size:11}},ticks:{color:tc,font:{size:10},callback:v=>[0.1,1,10,100,1000].includes(v)?v:''},grid:{color:gc}},y:{ticks:{color:tc,font:{size:11}},grid:{display:false}}}}});
+
+// 2. Usage
+new Chart(document.getElementById('c-usage'),{type:'doughnut',data:{labels:['建築・インフラ','エネルギー','農業・食料','製造・工業','消費財','その他'],datasets:[{data:[51,20,14,9,4,2],backgroundColor:['#534AB7','#D85A30','#1D9E75','#3266ad','#D4537E','#888780'],borderWidth:dk?0.5:1,borderColor:dk?'rgba(255,255,255,0.1)':'#fff'}]},options:{...commonOpts(),cutout:'55%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+c.parsed+'%'}}}}});
+
+// 3. Era
+new Chart(document.getElementById('c-era'),{type:'bar',data:{labels:['石器時代','青銅器時代','鉄器時代','中世','産業革命','電気・化学革命','現代'],datasets:[{label:'石・砂・鉱物',data:[70,40,30,25,15,25,48],backgroundColor:'#534AB7',borderRadius:2},{label:'木・バイオマス',data:[30,35,35,45,15,10,24],backgroundColor:'#1D9E75',borderRadius:2},{label:'金属',data:[0,20,30,20,25,20,10],backgroundColor:'#3266ad',borderRadius:2},{label:'化石燃料',data:[0,0,0,5,40,35,15],backgroundColor:'#D85A30',borderRadius:2},{label:'化学素材',data:[0,5,5,5,5,10,3],backgroundColor:'#D4537E',borderRadius:2}]},options:{indexAxis:'y',...commonOpts(),plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.parsed.x+'%',afterTitle:items=>[0,1,2,3].includes(items[0].dataIndex)?'（推定値）':''}}},scales:{x:{stacked:true,max:100,ticks:{color:tc,font:{size:10},callback:v=>v+'%'},grid:{color:gc}},y:{stacked:true,ticks:{color:(ctx)=>[0,1,2,3].includes(ctx.index)?wc:tc,font:ctx=>({size:11,weight:[0,1,2,3].includes(ctx.index)?'500':'400'})},grid:{display:false}}}}});
+
+// 4. Elements
+new Chart(document.getElementById('c-elem'),{type:'bar',data:{labels:['O (酸素)','Si (ケイ素)','C (炭素)','Al','Fe','Ca','H (水素)','Na+K+Mg','その他'],datasets:[{label:'地殻',data:[46,28,0.02,8,5,4,0.1,6.5,7.4],backgroundColor:'#888780',borderRadius:3,barPercentage:0.8,categoryPercentage:0.7},{label:'人類の採掘',data:[38,18,15,3,4,5,3,4,10],backgroundColor:'#534AB7',borderRadius:3,barPercentage:0.8,categoryPercentage:0.7}]},options:{indexAxis:'y',...commonOpts(),plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.parsed.x+'%'}}},scales:{x:{title:{display:true,text:'構成比（%）',color:tc,font:{size:11}},ticks:{color:tc,font:{size:10},callback:v=>v+'%'},grid:{color:gc}},y:{ticks:{color:(ctx)=>ctx.index===2?'#534AB7':tc,font:ctx=>({size:11,weight:ctx.index===2?'500':'400'})},grid:{display:false}}}}});
+
+// 5. Difficulty
+const mats=['砂・砕石','木材','レンガ','鉄鋼','セメント','ガラス','プラスチック','アルミ','銅','半導体Si'];
+const eMJ=[0.1,3,5,25,5,15,80,170,60,2500];
+const tempC=[20,20,1000,1500,1450,1500,300,2000,1100,1420];
+const steps=[1,2,3,5,4,4,6,6,6,12];
+const dC=mats.map((_,i)=>{const s=Math.log10(eMJ[i]+1)*steps[i];return s<3?'#1D9E75':s<8?'#3266ad':s<15?'#D85A30':'#993556'});
+new Chart(document.getElementById('c-diff'),{type:'bar',data:{labels:mats,datasets:[{data:eMJ,backgroundColor:dC,borderRadius:3,barPercentage:0.7}]},options:{indexAxis:'y',...commonOpts(),plugins:{legend:{display:false},tooltip:{callbacks:{afterLabel:ctx=>'温度: '+tempC[ctx.dataIndex].toLocaleString()+'°C\n工程: '+steps[ctx.dataIndex]+'段階'}}},scales:{x:{type:'logarithmic',title:{display:true,text:'MJ/kg（対数）',color:tc,font:{size:11}},ticks:{color:tc,font:{size:10},callback:v=>[0.1,1,10,100,1000,10000].includes(v)?v:''},grid:{color:gc}},y:{ticks:{color:tc,font:{size:11}},grid:{display:false}}}}});
+
+// 6. Regular cards
+const regulars=[
+  {name:'砂・砕石',color:'#534AB7',tags:['超豊富','加工不要','圧縮に強い','どこでも採れる'],note:'掘って混ぜるだけ。加工コスト最小。だから500億t/年使える'},
+  {name:'コンクリート',color:'#534AB7',tags:['自由成形','圧縮強度','耐火','安価'],note:'液体→固体の相転移が最大の武器。型に流して任意形状を作れる唯一の建材'},
+  {name:'木材',color:'#1D9E75',tags:['再生可能','軽い','加工容易','断熱性'],note:'唯一の「勝手に生える」構造材。引張にも圧縮にも対応する万能選手'},
+  {name:'鉄鋼',color:'#3266ad',tags:['最強の引張強度','合金自在','磁性','リサイクル◎'],note:'引っ張りに強い＝橋・高層ビル・機械の骨格。合金で特性を自在に調整'},
+  {name:'アルミ',color:'#3266ad',tags:['超軽量','耐食','導電','リサイクル◎'],note:'鉄の1/3の密度。航空機・缶・送電線。ただし精錬が電力バカ食い'},
+  {name:'銅',color:'#3266ad',tags:['最高の導電性','延性','抗菌','合金性'],note:'電気文明のインフラ。導電性は銀に次ぐが、銀より1000倍安い'},
+  {name:'プラスチック',color:'#D4537E',tags:['超軽量','自由成形','絶縁','安価'],note:'密度・成形性・コストの三拍子。弱点は紫外線劣化と分解されないこと'},
+  {name:'ガラス',color:'#534AB7',tags:['透明','耐薬品','硬い','リサイクル◎'],note:'「光を通す固体」という唯一無二の特性。窓・光ファイバー・スマホ画面'},
+  {name:'半導体Si',color:'#993556',tags:['電気制御','微細加工','超高純度','情報処理'],note:'量は微小(数万t/年)だが文明への影響は最大。砂と同じSiだが純度が9桁違う'}
+];
+const rc=document.getElementById('regular-cards');
+regulars.forEach(r=>{
+  rc.innerHTML+=`<div class="card"><div class="card-head"><div class="name">${r.name}</div></div><div class="tags">${r.tags.map(t=>`<span class="tag" style="background:${r.color}15;color:${r.color}">${t}</span>`).join('')}</div><div class="note">${r.note}</div></div>`;
+});
+
+// 7. Guest cards
+const guests=[
+  {name:'金 (Au)',color:'#BA7517',prod:'3,300t/年',tags:['腐食しない','超延性','導電性','希少＝信用'],note:'化学的にほぼ不滅。人類が掘った金の総量は約21万t＝プール4杯分。通貨・宝飾の他、電子接点にも不可欠'},
+  {name:'銀 (Ag)',color:'#888780',prod:'2.6万t/年',tags:['最高導電性','抗菌','感光性','反射率最大'],note:'全元素中トップの導電性・熱伝導性・反射率。今は太陽光パネルのペーストに大量消費'},
+  {name:'リチウム (Li)',color:'#1D9E75',prod:'18万t/年',tags:['最軽量金属','高電圧','電池の心臓','急成長中'],note:'最も軽い金属元素。リチウムイオン電池でEV・スマホ・蓄電を支える。2010→2025年で生産量10倍以上（採掘→精錬）'},
+  {name:'チタン (Ti)',color:'#3266ad',prod:'30万t/年',tags:['超軽量高強度','耐食','生体適合性','高温耐性'],note:'強度は鉄並みで密度は6割。航空機・人工関節。加工が激ムズで高い'},
+  {name:'タングステン (W)',color:'#D85A30',prod:'8.4万t/年',tags:['最高融点 3422°C','超硬','高密度','耐摩耗'],note:'全金属中最高融点。切削工具の刃先、砲弾の貫通体。中国が8割生産'},
+  {name:'レアアース',color:'#993556',prod:'35万t/年',tags:['超強力磁石','発光','触媒','代替困難'],note:'Nd磁石がEV・風力の心臓。実は「希少」ではなく「分離が困難」。中国が6割'},
+  {name:'コバルト (Co)',color:'#534AB7',prod:'19万t/年',tags:['電池安定化','超合金','耐熱','磁性'],note:'LiB正極材に不可欠。コンゴ民主共和国が7割産出、倫理的調達が課題'},
+  {name:'ウラン (U)',color:'#D85A30',prod:'4.9万t/年',tags:['超高エネ密度','核分裂','発電','兵器転用'],note:'1kgで石炭2,000t分。エネルギー密度は全素材中ぶっちぎり最強'},
+  {name:'ヘリウム (He)',color:'#1D9E75',prod:'3.2万t/年',tags:['最低沸点-269°C','不活性','超軽量','非再生'],note:'地球から宇宙へ逃げていく唯一の実用元素。MRI・半導体冷却に不可欠。枯渇リスク'},
+  {name:'白金族 (Pt/Pd/Rh)',color:'#888780',prod:'500t/年',tags:['触媒最強','超耐食','希少','排ガス浄化'],note:'自動車の触媒コンバーター。水素燃料電池にも不可欠。南アが7割産出'}
+];
+const guc=document.getElementById('guest-cards');
+guests.forEach(g=>{
+  guc.innerHTML+=`<div class="card"><div class="card-head"><div class="name">${g.name}</div><div class="prod">${g.prod}</div></div><div class="tags">${g.tags.map(t=>`<span class="tag" style="background:${g.color}15;color:${g.color}">${t}</span>`).join('')}</div><div class="note">${g.note}</div></div>`;
+});
+
+// 8. Scale comparison
+const allL=['砂・砕石','コンクリート','木材','鉄鋼','セメント','石油','石炭','プラスチック','ガラス','アルミ','銅','レアアース','チタン','コバルト','リチウム','タングステン','ウラン','ヘリウム','銀','金','白金族'];
+const allD=[5000000,1400000,350000,190000,440000,450000,800000,40000,13000,7000,2000,3500,3000,1900,1800,840,490,320,260,33,5];
+const allC2=allL.map((_,i)=>i<=10?'#534AB7':'#BA7517');
+new Chart(document.getElementById('c-scale'),{type:'bar',data:{labels:allL,datasets:[{data:allD,backgroundColor:allC2,borderRadius:3,barPercentage:0.7}]},options:{indexAxis:'y',...commonOpts(),plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.x;return v>=10000?Math.round(v/10000)+'億t/年':v.toLocaleString()+'万t/年'}}}},scales:{x:{type:'logarithmic',title:{display:true,text:'万トン/年（対数）',color:tc,font:{size:11}},ticks:{color:tc,font:{size:10},callback:v=>[1,10,100,1000,10000,100000,1000000,10000000].includes(v)?(v>=10000?Math.round(v/10000)+'億':v.toLocaleString()):''},grid:{color:gc}},y:{ticks:{color:ctx=>ctx.index>10?'#BA7517':tc,font:ctx=>({size:10,weight:ctx.index>10?'500':'400'})},grid:{display:false}}}}});
+
+// 9. Rare Earth
+const reeL=['Ce セリウム','La ランタン','Nd ネオジム','Pr プラセオジム','Sm サマリウム','Gd ガドリニウム','Y イットリウム','Dy ジスプロシウム','Er エルビウム','Eu ユーロピウム','Tb テルビウム','Ho ホルミウム','その他'];
+const reeD=[38,26,14,5,3,2.5,3.5,2,1.5,0.8,0.5,0.3,2.9];
+const reeC=reeL.map((_,i)=>i<6?'#534AB7':'#D4537E');
+const reeU=['触媒, 研磨剤, ガラス添加','光学ガラス, 電池, 触媒','永久磁石(最重要), EV, 風力','Nd磁石の添加, セラミック顔料','原子炉制御, 磁石添加','MRI造影剤, 磁石','LED蛍光体, セラミック','Nd磁石の耐熱性向上(最重要HREE)','光ファイバー増幅','蛍光体の赤色発光','蛍光体の緑色発光','レーザー, 磁性材料','Yb, Lu, Tm 等'];
+new Chart(document.getElementById('c-ree'),{type:'bar',data:{labels:reeL,datasets:[{data:reeD,backgroundColor:reeC,borderRadius:3,barPercentage:0.7}]},options:{indexAxis:'y',...commonOpts(),plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.x+'%',afterLabel:c=>reeU[c.dataIndex]}}},scales:{x:{title:{display:true,text:'生産量シェア(%)',color:tc,font:{size:11}},ticks:{color:tc,font:{size:10},callback:v=>v+'%'},grid:{color:gc}},y:{ticks:{color:tc,font:{size:10}},grid:{display:false}}}}});
+
+// 10. Geo cards
+const geoData=[
+  {title:'沈み込み帯',color:'#D85A30',desc:'海洋プレートが大陸の下に潜り込む。マグマが金属を濃縮して運び上げる',tags:['Cu 銅','Au 金','Ag 銀','Mo','Sn 錫'],region:'チリ, ペルー, インドネシア, フィリピン, 日本'},
+  {title:'安定陸塊（クラトン）',color:'#534AB7',desc:'数十億年動いていない古い大陸核。長い時間をかけて鉱床が濃縮',tags:['Au 金','ダイヤモンド','Fe 鉄','Cr クロム','白金族'],region:'南ア, オーストラリア, カナダ, ブラジル, ロシア'},
+  {title:'リフト帯・ホットスポット',color:'#1D9E75',desc:'大陸が裂ける地帯。深部マグマが希少元素を地表に押し上げる',tags:['Li リチウム','REE レアアース','Co コバルト','Ta タンタル','Nb ニオブ'],region:'コンゴ, ボリビア, チリ, エチオピア, 中国（内モンゴル）'},
+  {title:'堆積盆地',color:'#BA7517',desc:'古代の海や湖の底。有機物が圧縮されて化石燃料、蒸発して塩類鉱物に',tags:['石油・ガス','石炭','Li（塩湖）','K カリウム','P リン'],region:'中東, テキサス, シベリア, 南米（塩湖三角地帯）'}
+];
+const gec=document.getElementById('geo-cards');
+geoData.forEach(g=>{
+  gec.innerHTML+=`<div class="geo-card"><div class="gc-head"><span class="gc-dot" style="background:${g.color}"></span><span class="gc-title">${g.title}</span></div><div class="gc-desc">${g.desc}</div><div class="gc-tags">${g.tags.map(t=>`<span class="tag" style="background:${g.color}15;color:${g.color}">${t}</span>`).join(' ')}</div><div class="gc-region">${g.region}</div></div>`;
+});
+
+// 11. Geopolitics
+const geoL2=['コバルト','レアアース','白金族','リチウム','タングステン','銅','鉄鉱石','金'];
+const geoT1=[70,60,72,32,82,27,28,13];
+const geoN=['コンゴ','中国','南ア','豪州','中国','チリ','豪州','中国'];
+const geoC2=geoT1.map(v=>v>=60?'#E24B4A':v>=40?'#EF9F27':'#1D9E75');
+new Chart(document.getElementById('c-geopol'),{type:'bar',data:{labels:geoL2,datasets:[{data:geoT1,backgroundColor:geoC2,borderRadius:3,barPercentage:0.7}]},options:{indexAxis:'y',...commonOpts(),plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>geoN[c.dataIndex]+': '+c.parsed.x+'%'}}},scales:{x:{max:100,title:{display:true,text:'最大産出国のシェア(%)',color:tc,font:{size:11}},ticks:{color:tc,font:{size:10},callback:v=>v+'%'},grid:{color:gc}},y:{ticks:{color:tc,font:{size:11}},grid:{display:false}}}}});
+
+// 12. Recycle rates
+const recLabels=['鉄鋼','アルミ','銅','金','ガラス','紙','コンクリート','プラスチック','リチウム(電池)','レアアース','砂・砕石'];
+const recData=[85,75,80,90,40,68,30,9,5,1,0];
+const recReasons=[
+  '磁気選別が容易＋品質劣化が少ない','溶解コストが新製より95%安い','高価なので回収インセンティブ◎','高価値＋化学的安定でほぼ永久循環','色分別が必要、混合ガラスは価値低下',
+  '繊維が短くなるため5-7回で限界','ダウンサイクル(路盤材等)が主','種類が多すぎて分別困難＋劣化','技術開発中、回収インフラ未整備','製品中の含有量が微量で回収コスト高','安すぎて回収する経済合理性なし'
+];
+const recColors=recData.map(v=>v>=70?'#1D9E75':v>=30?'#3266ad':'#E24B4A');
+new Chart(document.getElementById('c-recycle'),{type:'bar',data:{labels:recLabels,datasets:[{data:recData,backgroundColor:recColors,borderRadius:3,barPercentage:0.7}]},options:{indexAxis:'y',...commonOpts(),plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.x+'%',afterLabel:c=>recReasons[c.dataIndex]}}},scales:{x:{max:100,title:{display:true,text:'リサイクル率(%)',color:tc,font:{size:11}},ticks:{color:tc,font:{size:10},callback:v=>v+'%'},grid:{color:gc}},y:{ticks:{color:tc,font:{size:11}},grid:{display:false}}}}});
+
+// 13. Japan import dependency
+const jpLabels=['石油','天然ガス','石炭','鉄鉱石','銅','アルミ(ボーキサイト)','レアアース','リチウム','タングステン','ウラン'];
+const jpData=[99.7,97.5,99.5,99.6,100,100,100,100,100,100];
+const jpFrom=['中東62%','豪州36%','豪州66%','豪州53%','チリ43%','豪州42%','中国58%','豪/チリ','中国80%','豪/カナダ'];
+const jpColors=jpData.map(v=>v>=99?'#E24B4A':v>=90?'#EF9F27':'#3266ad');
+new Chart(document.getElementById('c-japan-import'),{type:'bar',data:{labels:jpLabels,datasets:[{data:jpData,backgroundColor:jpColors,borderRadius:3,barPercentage:0.7}]},options:{indexAxis:'y',...commonOpts(),plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.x+'%',afterLabel:c=>'主要輸入元: '+jpFrom[c.dataIndex]}}},scales:{x:{min:90,max:101,title:{display:true,text:'輸入依存度(%) ※軸は90%〜',color:tc,font:{size:11}},ticks:{color:tc,font:{size:10},callback:v=>v+'%'},grid:{color:gc}},y:{ticks:{color:tc,font:{size:11}},grid:{display:false}}}}});
+
+// 14. Lifespan
+const lsLabels=['バナナの皮','紙','木材(無塗装)','綿布','合板','鉄(露出)','アルミ缶','コンクリート','プラスチック袋','ペットボトル','発泡スチロール','ガラス瓶','陶器','放射性廃棄物(高)'];
+const lsData=[0.08, 0.5, 15, 5, 30, 50, 200, 500, 500, 450, 1000, 10000, 50000, 100000];
+const lsColors=lsData.map(v=>v<=5?'#1D9E75':v<=100?'#3266ad':v<=1000?'#D85A30':'#993556');
+const lsNotes=[
+  '2-5週間','6ヶ月、水中だと数週間','環境次第、防腐剤なしで10-20年','天然繊維は微生物が分解','接着剤が分解を遅らせる',
+  '酸化(錆)で崩壊。海水だとさらに早い','表面酸化膜が分解を遅らせる','セメント成分が風化するが数百年','紫外線で細片化→マイクロプラに',
+  '分解ではなく微細化。環境中に残存','海洋で最も問題視される素材の一つ','SiO2は化学的に超安定。実質永久','焼き物は数万年残る（考古学の証拠）','半減期10万年超。人類史より長い'
+];
+new Chart(document.getElementById('c-lifespan'),{type:'bar',data:{labels:lsLabels,datasets:[{data:lsData,backgroundColor:lsColors,borderRadius:3,barPercentage:0.7}]},options:{indexAxis:'y',...commonOpts(),plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const v=c.parsed.x;return v<1?Math.round(v*12)+'ヶ月':v>=1000?v.toLocaleString()+'年':v+'年'},afterLabel:c=>lsNotes[c.dataIndex]}}},scales:{x:{type:'logarithmic',title:{display:true,text:'分解期間（年・対数）',color:tc,font:{size:11}},ticks:{color:tc,font:{size:10},callback:v=>[0.1,1,10,100,1000,10000,100000].includes(v)?v.toLocaleString():''},grid:{color:gc}},y:{ticks:{color:tc,font:{size:10}},grid:{display:false}}}}});
+
+// 15. Future materials cards
+const futures=[
+  {name:'グラフェン',color:'#534AB7',tags:['鋼鉄の200倍の強度','最高の導電性','透明','原子1層'],note:'炭素原子1層の2Dシート。理論性能は全素材中最強だが量産コストが壁。電池・センサー・複合材が先行'},
+  {name:'カーボンナノチューブ(CNT)',color:'#534AB7',tags:['超高引張強度','導電','軽量','宇宙エレベーター候補'],note:'直径数nmの中空炭素繊維。宇宙エレベーターのケーブル候補。現在は半導体・スポーツ用品に限定利用'},
+  {name:'バイオプラスチック',color:'#1D9E75',tags:['生分解性','植物由来','CO2削減','石油代替'],note:'PLA(トウモロコシ由来)、PHA(微生物生産)等。分解条件に注意（工業堆肥化が必要なものも多い）'},
+  {name:'ペロブスカイト',color:'#D85A30',tags:['印刷可能な太陽電池','安価','軽量','柔軟'],note:'シリコン太陽電池の半分以下のコストで製造可能。耐久性が課題だが急速に改善中。2025年に商用化開始'},
+  {name:'エアロゲル',color:'#3266ad',tags:['世界最軽量の固体','超断熱','透明化可能','宇宙用'],note:'99.8%が空気の固体。NASAの火星探査機で使用。建築用断熱材としてコスト低下中'},
+  {name:'セルロースナノファイバー(CNF)',color:'#1D9E75',tags:['木材由来','鉄鋼の1/5の軽さで5倍の強度','透明','日本が先行'],note:'木材パルプから製造。日本が研究で世界リード。車体軽量化・食品包装・化粧品に展開中'},
+  {name:'形状記憶合金(SMA)',color:'#3266ad',tags:['温度で形状復元','医療器具','宇宙展開構造','アクチュエータ'],note:'NiTi(ニチノール)が代表。血管ステント・眼鏡フレーム・航空宇宙で実用済。4D printing素材としても注目'},
+  {name:'量子ドット',color:'#D4537E',tags:['発光波長を制御','ディスプレイ','太陽電池','医療イメージング'],note:'半導体ナノ結晶。サイズで色が変わる量子効果。QD-OLEDテレビで商用化済。Cdフリー化が進行中'}
+];
+const fuc=document.getElementById('future-cards');
+futures.forEach(f=>{
+  fuc.innerHTML+=`<div class="card"><div class="card-head"><div class="name">${f.name}</div></div><div class="tags">${f.tags.map(t=>`<span class="tag" style="background:${f.color}15;color:${f.color}">${t}</span>`).join('')}</div><div class="note">${f.note}</div></div>`;
+});
+
+// 15b. Future bubble chart (x=years to mass adoption, y=impact, r=current investment)
+new Chart(document.getElementById('c-future-bubble'),{type:'bubble',data:{datasets:[
+  {label:'グラフェン',data:[{x:8,y:95,r:14}],backgroundColor:'#534AB780'},
+  {label:'CNT',data:[{x:12,y:90,r:10}],backgroundColor:'#534AB760'},
+  {label:'バイオプラ',data:[{x:3,y:50,r:16}],backgroundColor:'#1D9E7580'},
+  {label:'ペロブスカイト',data:[{x:2,y:75,r:18}],backgroundColor:'#D85A3080'},
+  {label:'エアロゲル',data:[{x:5,y:60,r:8}],backgroundColor:'#3266ad80'},
+  {label:'CNF',data:[{x:4,y:55,r:12}],backgroundColor:'#1D9E7560'},
+  {label:'SMA',data:[{x:1,y:40,r:7}],backgroundColor:'#3266ad60'},
+  {label:'量子ドット',data:[{x:1,y:65,r:11}],backgroundColor:'#D4537E80'}
+]},options:{...commonOpts(),plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+' — 実用化まで約'+c.parsed.x+'年 / インパクト'+c.parsed.y+'/100'}}},scales:{x:{min:0,max:15,title:{display:true,text:'量産実用化までの推定年数',color:tc,font:{size:11}},ticks:{color:tc,font:{size:10}},grid:{color:gc}},y:{min:0,max:100,title:{display:true,text:'潜在的インパクト(0-100)',color:tc,font:{size:11}},ticks:{color:tc,font:{size:10}},grid:{color:gc}}}}});
+
+// Smooth scroll for nav
+document.querySelectorAll('nav a').forEach(a=>{
+  a.addEventListener('click',e=>{
+    e.preventDefault();
+    document.querySelector(a.getAttribute('href')).scrollIntoView({behavior:'smooth'});
+  });
+});
+</script>
+</body>
+</html>
